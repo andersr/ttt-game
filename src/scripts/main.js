@@ -110,18 +110,8 @@ $(function() {
         // is there an available move that matches a winning pattern with two matches for human.moves? if, yes, select
 
         // which available moves match a winning pattern with 1 bot move?
-// const TTT_WINNERS = [
-//   [0, 1, 2],
-//   [3, 4, 5],
-//   [6, 7, 8],
-//   [0, 3, 6],
-//   [1, 4, 7],
-//   [2, 5, 8],
-//   [0, 4, 8],
-//   [2, 4, 6]
-// ]
 
-        const botMoveCandidates = TTT_WINNERS.filter(winner => {
+        const moveCandidates = TTT_WINNERS.filter(winner => {
           // select if winner has a available moves
           const winningPatternHasAvailableMoves = _.intersection(winner, currentAvailableMoves).length > 0
 
@@ -150,7 +140,11 @@ $(function() {
           }
         })
 
-        // NEXT: get the human move candidates in the same way and see which pattern has one or more overlapping moves; also, reduce this to actual moves and not the complete win patterns.
+        const humanMoveCandidates = 'foo' // modify moveCandidates to allow for getting human moves equivalent
+
+        const botMoveCandidates = _.pullAll(_.flatten(moveCandidates), bot.moves)
+
+        // NEXT: get the human move candidates in the same way and see which pattern has one or more overlapping moves (not matching patterns)
 
         console.log('botMoveCandidates: ', botMoveCandidates)
         // which available moves match a winning pattern with 1 human move?
