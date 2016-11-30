@@ -103,6 +103,7 @@ $(function() {
         playerMove(bot, openingMove(human.moves))
       } else {
         const currentAvailableMoves = availableMoves()
+
         // loop through available moves - goal is to eliminate and reduce to 1
 
         // is there an available move that matches a winning pattern with two matches for bot.moves? if, yes, select
@@ -112,8 +113,9 @@ $(function() {
         // which available moves match a winning pattern with 1 bot move?
 
         const moveCandidates = TTT_WINNERS.filter(winner => {
-          // select if winner has a available moves
-          const winningPatternHasAvailableMoves = _.intersection(winner, currentAvailableMoves).length > 0
+
+          // select if winner has available moves
+          const winWithAvailableMoves = _.intersection(winner, currentAvailableMoves).length > 0
 
           const winningPatternHasHumanMoves = winner => {
             for(var i = 0 ; i < human.moves.length ; i++){
@@ -135,18 +137,44 @@ $(function() {
             return false
           }
 
-          if(winningPatternHasAvailableMoves && winningPatternIncludesBotMove(winner) && !winningPatternHasHumanMoves(winner)){
+          if(winWithAvailableMoves && winningPatternIncludesBotMove(winner) && !winningPatternHasHumanMoves(winner)){
             return winner
           }
         })
-
-        const humanMoveCandidates = 'foo' // modify moveCandidates to allow for getting human moves equivalent
-
         const botMoveCandidates = _.pullAll(_.flatten(moveCandidates), bot.moves)
 
         // NEXT: get the human move candidates in the same way and see which pattern has one or more overlapping moves (not matching patterns)
 
-        console.log('botMoveCandidates: ', botMoveCandidates)
+         // find winning patterns with human moves
+        const humanMoveWinners = TTT_WINNERS.filter(winner => {
+          for(var i = 0; i < human.moves.length; i++) {
+            // console.log('winner: ', winner, ' bot.moves[i]: ', bot.moves[i])
+            if(_.includes(winner, human.moves[i])){
+              return true
+            }
+          }
+        })
+        console.log('humanMoveWinners: ', humanMoveWinners)
+          console.log('botMoveCandidates: ', botMoveCandidates)
+        // if a botMoveCandidate is found in humanMoveWinners
+        const blockingBotMoves = botMoveCandidates.filter(move => {
+          for(var i = 0; i < humanMoveWinners.length; i++) {
+              console.log('humanMoveWinners[i]: ', humanMoveWinners[i])
+            // console.log('winner: ', winner, ' bot.moves[i]: ', bot.moves[i])
+            if(_.includes(humanMoveWinners[i], move)) {
+              return true
+            }
+          }
+        })
+
+        console.log('blockingBotMoves: ', blockingBotMoves)
+        if(blockingBotMoves.length === 0) {
+          playerMove(bot, botMoveCandidates[Math.floor(Math.random() * botMoveCandidates.length)])
+        } else {
+          playerMove(bot, blockingBotMoves[0])
+        }
+
+
         // which available moves match a winning pattern with 1 human move?
         // if they intersect, select it
         // else select a random set from the single matches
