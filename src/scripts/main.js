@@ -17,23 +17,44 @@ const TTT_WINNERS = [
 let selectedPlayer
 let allMoves = []
 
-function qtyMatches(pattern, playerMoves){
-  //console.log('pattern: ', pattern, 'playerMoves: ', playerMoves)
+function openingMove (humanMoves) {
+  const centerSquare = 4
+  const cornerSquares = [0, 2, 6, 8]
+  if(humanMoves.indexOf(centerSquare) === -1) {
+    return centerSquare
+  } else {
+    return cornerSquares[Math.floor(Math.random() * cornerSquares.length)]
+  }
+}
+
+function qtyMatches (pattern, playerMoves) {
   var qty = 0
-  for(var i = 0; i < pattern.length ; i++) {
-    if(_.includes(playerMoves, pattern[i])){
+  for(var i = 0; i < pattern.length; i++) {
+    if(_.includes(playerMoves, pattern[i])) {
       qty++
     }
   }
   return qty
 }
 
-function isWinner(playerMoves){
+function winningMove (playerMoves, availableMoves) {
+  const winningPattern = TTT_WINNERS.filter(winner => {
+    if(qtyMatches(winner, playerMoves) === 2 && _.intersection(winner, availableMoves).length > 0) {
+      console.log('is winner')
+      return true
+    }
+  })
+  return _.intersection(winningPattern, availableMoves)
+  //look for winning pattern with two matches for player moves
+  // if remaining item is available, push onto winningMove
+}
+
+function isWinner (playerMoves) {
   if(playerMoves.length < 3) { return false }
 
-  for(var i = 0; i < TTT_WINNERS.length ; i++){
+  for(var i = 0; i < TTT_WINNERS.length; i++) {
     //console.log('isWinner: TTT_WINNERS pattern: ', TTT_WINNERS[i], 'playerMoves: ', playerMoves)
-    if(qtyMatches(TTT_WINNERS[i], playerMoves) === 3){
+    if(qtyMatches(TTT_WINNERS[i], playerMoves) === 3) {
       console.log('is winner')
       return true
     }
@@ -41,26 +62,6 @@ function isWinner(playerMoves){
   console.log('not a winner')
   return false
 }
-
-function openingMove(humanMoves){
-  const centerSquare = 4
-  const cornerSquares = [0,2,6,8]
-  if(humanMoves.indexOf(centerSquare) === -1){
-    return centerSquare
-  } else {
-    return cornerSquares[Math.floor(Math.random() * cornerSquares.length)]
-  }
-}
-
-const matchingWinners = playerMove => TTT_WINNERS.filter(winner => winner.indexOf(playerMove) >= 0)
-const availableWinners = availableMoves => TTT_WINNERS.filter(winner => _.intersection(winner, availableMoves).length > 0)
-const availablePlayerWinners = (winnerCandidates, playerMoves) => winnerCandidates.filter(winner => {
-  for(var i = 0; i < playerMoves.length ; i++){
-    if(_.includes(winner, playerMoves[i])){
-      return winner
-    }
-  }
-})
 
 $(function() {
   const $messages = $('.messages')
@@ -73,7 +74,7 @@ $(function() {
     $playerOptions.show()
     $('.select-player').on('click', selectPlayer)
 
-    function selectPlayer(){
+    function selectPlayer() {
       selectedPlayer = $(this).data('player')
       $('.select-player').off()
       $playerOptions.hide()
@@ -83,7 +84,7 @@ $(function() {
     }
   }
 
-  function runGame(){
+  function runGame() {
     const bot = {}
     const human = {}
     human.player = selectedPlayer
@@ -98,27 +99,26 @@ $(function() {
       return avail
     }
 
-    function botMove() {
-      if(bot.moves.length === 0 ){
+  // ** loop through available moves - goal is to eliminate and reduce to 1 **
+    function botMove () {
+      if(bot.moves.length === 0) {
         playerMove(bot, openingMove(human.moves))
+      } else if (winningMove(bot.moves, availableMoves()).length > 0) {
+      // ** look for and take a winning move **
+        playerMove(bot, winningMove(bot.moves, availableMoves()))
+        return
+      } else if(winningMove(human.moves, availableMoves()).length > 0) {
+          // ** look for and block a winning human move **
+        playerMove(bot, winningMove(human.moves, availableMoves()))
+        return
       } else {
-        const currentAvailableMoves = availableMoves()
-
-        // ** loop through available moves - goal is to eliminate and reduce to 1 **
-
-        // ** look for winning bot move **
-        // is there an available move that matches a winning pattern with two matches for bot.moves? if, yes, select
-
-         // ** look for winning human move **
-        // is there an available move that matches a winning pattern with two matches for human.moves? if, yes, select
-
         // which available moves match a winning pattern with 1 bot move?
         const moveCandidates = TTT_WINNERS.filter(winner => {
-          const winWithAvailableMoves = _.intersection(winner, currentAvailableMoves).length > 0
+          const winWithAvailableMoves = _.intersection(winner, availableMoves()).length > 0
 
           const winningPatternHasHumanMoves = winner => {
-            for(var i = 0 ; i < human.moves.length ; i++){
-              if(_.includes(winner, human.moves[i])){
+            for(var i = 0; i < human.moves.length; i++) {
+              if(_.includes(winner, human.moves[i])) {
                 return true
               }
             }
@@ -127,16 +127,16 @@ $(function() {
 
           const winningPatternIncludesBotMove = winner => {
             //  console.log('bot.moves: ', bot.moves)
-            for(var i = 0 ; i < bot.moves.length ; i++){
+            for(var i = 0; i < bot.moves.length; i++) {
               // console.log('winner: ', winner, ' bot.moves[i]: ', bot.moves[i])
-              if(_.includes(winner, bot.moves[i])){
+              if(_.includes(winner, bot.moves[i])) {
                 return true
               }
             }
             return false
           }
 
-          if(winWithAvailableMoves && winningPatternIncludesBotMove(winner) && !winningPatternHasHumanMoves(winner)){
+          if(winWithAvailableMoves && winningPatternIncludesBotMove(winner) && !winningPatternHasHumanMoves(winner)) {
             return winner
           }
         })
@@ -145,7 +145,7 @@ $(function() {
          // find winning patterns with human moves
         const humanMoveWinners = TTT_WINNERS.filter(winner => {
           for(var i = 0; i < human.moves.length; i++) {
-            if(_.includes(winner, human.moves[i])){
+            if(_.includes(winner, human.moves[i])) {
               return true
             }
           }
@@ -161,7 +161,6 @@ $(function() {
           }
         })
 
-        // console.log('blockingBotMoves: ', blockingBotMoves)
         if(blockingBotMoves.length === 0) {
           playerMove(bot, botMoveCandidates[Math.floor(Math.random() * botMoveCandidates.length)])
         } else {
@@ -170,7 +169,7 @@ $(function() {
       }
     }
 
-    function humanMove() {
+    function humanMove () {
       // const $board = $('.ttt-board')
       // $board.addClass('human-move')
       const $emptySquare = $('.empty-square')
@@ -189,18 +188,18 @@ $(function() {
       $button.replaceWith($playedSquare.append(player.player))
       player.moves.push(selectedSquare)
       // console.log('player: ', player.player, ', moves: ', player.moves)
-      if(totalMoves() > 2 && isWinner(player.moves)){
+      if(totalMoves() > 2 && isWinner(player.moves)) {
          console.log('we have a winner: ', player)
          return
-       } else if(player === human){
+       } else if(player === human) {
          botMove()
       } else {
         humanMove()
       }
     }
 
-    function startGame(){
-      if(human.player === 'x'){
+    function startGame() {
+      if(human.player === 'x') {
         humanMove()
       } else {
         botMove()
@@ -244,6 +243,17 @@ $(function() {
 // filter winning patterns by available moves
 // if a winning pattern includes an available move
 
+// const matchingWinners = playerMove => TTT_WINNERS.filter(winner => winner.indexOf(playerMove) >= 0)
+
+// const availableWinners = availableMoves => TTT_WINNERS.filter(winner => _.intersection(winner, availableMoves).length > 0)
+
+// const availablePlayerWinners = (winnerCandidates, playerMoves) => winnerCandidates.filter(winner => {
+//   for(var i = 0; i < playerMoves.length; i++) {
+//     if(_.includes(winner, playerMoves[i])) {
+//       return winner
+//     }
+//   }
+// })
 
 
 // function nextMove(playerMoves, availableMoves){
