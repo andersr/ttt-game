@@ -60,6 +60,18 @@ const winningMove = (playerMoves, opponentMoves) => {
   return _.flatten(moves)
 }
 
+const isWinner = player => {
+  const winningMove = _.filter(TTT_WINNERS, pattern => _.intersection(pattern, movesByPlayer(player)).length == 3)
+  //console.log('winner: ', winner)
+  if (winningMove.length > 0) {
+    return { winningPattern: _.flatten(winningMove), winningPlayer: player }
+  } else {
+    return null
+  }
+  // return { winningPattern: winner, winningPlayer: player }
+  //return _.flatten(moves)
+}
+
 $(function() {
   const $messages = $('.messages')
 
@@ -112,9 +124,9 @@ $(function() {
           if(blockingMoves.length > 0) {
             playerMove(bot, randomSelection(blockingMoves))
           } else if (botMoveCandidates.length > 0) {
-            playerMove(bot, randomSelection(botMoveCandidates))
+              playerMove(bot, randomSelection(botMoveCandidates))
           } else {
-            playerMove(bot, randomSelection(availableMoves()))
+              playerMove(bot, randomSelection(availableMoves()))
           }
         }
       // }
@@ -130,6 +142,19 @@ $(function() {
       })
     }
 
+    // call check for win or tie, then if none, call playerMove()
+    //function checkForWinOrTie (nextMove) {
+      // const winner = checkForWinner()
+      // const tie = checkForTie()
+      //
+      // if (tie) {
+      //   console.log('game is a tie')
+      // } else if (winner) {
+      //   console.log('the winner is...')
+      // }
+      //nextMove(player, selectedSquare)
+    //}
+
     function playerMove (player, selectedSquare) {
       const $square = $(`div[data-square-id=${selectedSquare}]`)
       const $button = $square.children('.empty-square')
@@ -138,9 +163,15 @@ $(function() {
       const square = _.find(tttMoves, move => move.id === selectedSquare)
       square.state = player.mark
 
-      // check for win or tie
+      if (movesByPlayer(player).length > 2) {
+        if(!!isWinner(player)){
+          console.log('isWinner(player): ', isWinner(player))
+          return
+        }
+      }
 
-      if(qtyMovesRemaining() > 0) {
+
+     if (qtyMovesRemaining() > 0) {
         if(player === human) {
           botMove()
         } else {
