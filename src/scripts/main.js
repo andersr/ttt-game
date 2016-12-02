@@ -1,7 +1,3 @@
-// import View from 'views/view';
-
-// const g = 9.81;
-
 'use strict'
 const TTT_WINNERS = [
   [0, 1, 2],
@@ -27,33 +23,10 @@ function openingMove (humanMoves) {
   }
 }
 
-function qtyMatches (pattern, playerMoves) {
-  var qty = 0
-  for(var i = 0; i < pattern.length; i++) {
-    if(_.includes(playerMoves, pattern[i])) {
-      qty++
-    }
-  }
-  return qty
-}
-
-function winningMove (playerMoves, availableMoves) {
-  const winningPattern = TTT_WINNERS.filter(winner => {
-    if(qtyMatches(winner, playerMoves) === 2 && _.intersection(winner, availableMoves).length > 0) {
-      console.log('is winner')
-      return true
-    }
-  })
-  return _.intersection(winningPattern, availableMoves)
-  //look for winning pattern with two matches for player moves
-  // if remaining item is available, push onto winningMove
-}
 
 function isWinner (playerMoves) {
   if(playerMoves.length < 3) { return false }
-
   for(var i = 0; i < TTT_WINNERS.length; i++) {
-    //console.log('isWinner: TTT_WINNERS pattern: ', TTT_WINNERS[i], 'playerMoves: ', playerMoves)
     if(qtyMatches(TTT_WINNERS[i], playerMoves) === 3) {
       console.log('is winner')
       return true
@@ -62,6 +35,47 @@ function isWinner (playerMoves) {
   console.log('not a winner')
   return false
 }
+function isTie (botMoves, humanMoves) {
+  if(!isWinner(botMoves) && !isWinner(humanMoves)) {
+    return true
+  } else {
+    return false
+  }
+  // if 1 available move, test next player's move and see if it is a win, then return false, else return true
+  // return false
+}
+
+
+function qtyMatches (pattern, playerMoves) {
+  const qty = _.intersection(pattern, playerMoves).length
+  //console.log('qty matches: ', qty, ' pattern: ', pattern, ' playerMoves: ', playerMoves)
+  return qty
+}
+
+const winningMove = (playerMoves, availableMoves) => {
+  let winningMove
+  for(var i = 0; i < TTT_WINNERS.length; i++) {
+     console.log('TTT_WINNERS[i]: ', TTT_WINNERS[i], 'playerMoves: ', playerMoves, 'avail: ', _.intersection(TTT_WINNERS[i], availableMoves))
+    if(_.intersection(TTT_WINNERS[i], playerMoves).length === 2 && _.intersection(TTT_WINNERS[i], availableMoves).length === 1) {
+      winningMove = _.intersection(TTT_WINNERS[i], availableMoves)
+      console.log('winning move: ', winningMove)
+      return winningMove
+    }
+  }
+  return []
+}
+// function winningMove (playerMoves, availableMoves) {
+//   const winningPattern = TTT_WINNERS.filter(pattern => {
+//     //console.log('_.intersection(winner, availableMoves): ', _.intersection(winner, availableMoves), 'winner: ', winner)
+//     //console.log('qtyMatches: ', qtyMatches(pattern, playerMoves), ' pattern: ', pattern, ' moves: ', playerMoves)
+//     if(qtyMatches(pattern, playerMoves) === 2 && _.intersection(pattern, availableMoves).length > 0) {
+//       return true
+//     }
+//   })
+//   const winMove = _.intersection(winningPattern[0], availableMoves)
+//   console.log('winningPattern: ', winningPattern[0])
+//   return winMove
+// }
 
 $(function() {
   const $messages = $('.messages')
@@ -95,28 +109,36 @@ $(function() {
     const availableMoves = () => {
       const currentMoves = _.concat(bot.moves, human.moves)
       const avail = _.difference(allMoves, currentMoves)
-      // console.log('available moves: ', avail)
       return avail
     }
-
-  // ** loop through available moves - goal is to eliminate and reduce to 1 **
     function botMove () {
       if(bot.moves.length === 0) {
+        console.log('opening move')
         playerMove(bot, openingMove(human.moves))
-      } else if (winningMove(bot.moves, availableMoves()).length > 0) {
-      // ** look for and take a winning move **
+      } else if (bot.moves.length >= 2 && winningMove(bot.moves, availableMoves()).length > 0) {
+        console.log('check if bot has winning move')
         playerMove(bot, winningMove(bot.moves, availableMoves()))
         return
-      } else if(winningMove(human.moves, availableMoves()).length > 0) {
-          // ** look for and block a winning human move **
+      } else if(human.moves.length >= 2 && winningMove(human.moves, availableMoves()).length > 0) {
+        console.log('check if human has winning move')
         playerMove(bot, winningMove(human.moves, availableMoves()))
         return
       } else {
-        // which available moves match a winning pattern with 1 bot move?
+        console.log('bot moves: ', bot.moves)
+        console.log('winning move: ', winningMove(bot.moves, availableMoves()))
         const moveCandidates = TTT_WINNERS.filter(winner => {
-          const winWithAvailableMoves = _.intersection(winner, availableMoves()).length > 0
+          const winHasAvailableMoves = _.intersection(winner, availableMoves()).length > 0
 
-          const winningPatternHasHumanMoves = winner => {
+          const patternHasBotMove = winner => {
+            for(var i = 0; i < bot.moves.length; i++) {
+              if(_.includes(winner, bot.moves[i])) {
+                return true
+              }
+            }
+            return false
+          }
+
+          const patternHasHumanMove = winner => {
             for(var i = 0; i < human.moves.length; i++) {
               if(_.includes(winner, human.moves[i])) {
                 return true
@@ -125,24 +147,12 @@ $(function() {
             return false
           }
 
-          const winningPatternIncludesBotMove = winner => {
-            //  console.log('bot.moves: ', bot.moves)
-            for(var i = 0; i < bot.moves.length; i++) {
-              // console.log('winner: ', winner, ' bot.moves[i]: ', bot.moves[i])
-              if(_.includes(winner, bot.moves[i])) {
-                return true
-              }
-            }
-            return false
-          }
-
-          if(winWithAvailableMoves && winningPatternIncludesBotMove(winner) && !winningPatternHasHumanMoves(winner)) {
+          if(winHasAvailableMoves && patternHasBotMove(winner) && !patternHasHumanMove(winner)) {
             return winner
           }
         })
         const botMoveCandidates = _.pullAll(_.flatten(moveCandidates), bot.moves)
 
-         // find winning patterns with human moves
         const humanMoveWinners = TTT_WINNERS.filter(winner => {
           for(var i = 0; i < human.moves.length; i++) {
             if(_.includes(winner, human.moves[i])) {
@@ -150,33 +160,27 @@ $(function() {
             }
           }
         })
-        // console.log('humanMoveWinners: ', humanMoveWinners)
-        //   console.log('botMoveCandidates: ', botMoveCandidates)
         const blockingBotMoves = botMoveCandidates.filter(move => {
           for(var i = 0; i < humanMoveWinners.length; i++) {
-              console.log('humanMoveWinners[i]: ', humanMoveWinners[i])
             if(_.includes(humanMoveWinners[i], move)) {
               return true
             }
           }
         })
 
-        if(blockingBotMoves.length === 0) {
-          playerMove(bot, botMoveCandidates[Math.floor(Math.random() * botMoveCandidates.length)])
-        } else {
+        if(blockingBotMoves.length > 0) {
           playerMove(bot, blockingBotMoves[0])
+        } else {
+          playerMove(bot, botMoveCandidates[Math.floor(Math.random() * botMoveCandidates.length)])
         }
       }
     }
 
     function humanMove () {
-      // const $board = $('.ttt-board')
-      // $board.addClass('human-move')
       const $emptySquare = $('.empty-square')
       $emptySquare.on('click', function(){
         var selectedSquare = $(this).parent().data('square-id')
         $emptySquare.off()
-        // $board.removeClass('human-move')
         playerMove(human, selectedSquare)
       })
     }
@@ -187,14 +191,20 @@ $(function() {
       const $playedSquare = $(document.createElement('div')).addClass('played-square')
       $button.replaceWith($playedSquare.append(player.player))
       player.moves.push(selectedSquare)
-      // console.log('player: ', player.player, ', moves: ', player.moves)
+      //console.log('totalMoves(): ', totalMoves())
       if(totalMoves() > 2 && isWinner(player.moves)) {
          console.log('we have a winner: ', player)
          return
-       } else if(player === human) {
-         botMove()
-      } else {
-        humanMove()
+       } else if(totalMoves() === 9 && isTie(bot.moves, human.moves)) {
+        console.log('bot.moves: ', bot.moves)
+         console.log('it is a tie')
+         return
+       } else {
+         if(player === human) {
+           botMove()
+         } else {
+           humanMove()
+         }
       }
     }
 
@@ -237,73 +247,3 @@ $(function() {
   }
   newGame()
 })
-
-// loop through available moves
-// which moves match a winning pattern?
-// filter winning patterns by available moves
-// if a winning pattern includes an available move
-
-// const matchingWinners = playerMove => TTT_WINNERS.filter(winner => winner.indexOf(playerMove) >= 0)
-
-// const availableWinners = availableMoves => TTT_WINNERS.filter(winner => _.intersection(winner, availableMoves).length > 0)
-
-// const availablePlayerWinners = (winnerCandidates, playerMoves) => winnerCandidates.filter(winner => {
-//   for(var i = 0; i < playerMoves.length; i++) {
-//     if(_.includes(winner, playerMoves[i])) {
-//       return winner
-//     }
-//   }
-// })
-
-
-// function nextMove(playerMoves, availableMoves){
-//   const candidatePatterns =
-//   for(var i = 0; i < availableMoves.length ; i++){
-//     //filter available moves for winning patterns
-//     // find intersection between playerMoves and winning patterns
-
-//     if(qtyMatches(TTT_WINNERS[i], playerMoves) === 3){
-//       console.log('is winner')
-//       return true
-//     }
-//   }
-//   console.log('not a winner')
-//   return false
-// }
-// {
-
-//   if(winner.indexOf(playerMove) >= 0){
-//     return winner
-//   }
-// })
-// function nextMove(playerMoves, available){
-//   for(var i = 0; i < TTT_WINNERS.length ; i++){
-//     // do current moves include two from a winning pattern?
-//     if(qtyMatches(TTT_WINNERS[i], playerMoves) === 2){
-//       // which move in the pattern is the winning move?
-//       const move = _.difference(TTT_WINNERS[i], playerMoves)
-//      // is the move available?
-//      if(_.includes(available, move[0])){
-//        return move
-//      }
-//     }
-//   }
-//   return []
-// }
-
-    // else if(qtyMatches(TTT_WINNERS[i], playerMoves) === 1){
-    //   const possibleMoves = _.difference(TTT_WINNERS[i], playerMoves)
-    //   if(_.includes(available, possibleMoves[0])){
-    //    return possibleMoves
-    //   }
-    // }
-
-            // which available moves match a winning pattern with 1 human move?
-            // if they intersect, select it
-            // else select a random set from the single matches
-            // else select a random available move
-            // const candidates = availableWinners(availableMoves())
-            // console.log('candidates: ', candidates)
-            // const playerCandidates = availablePlayerWinners(candidates, bot.moves)
-            // console.log('nextBotMove: ', nextBotMove)
-            // console.log('playerCandidates: ', playerCandidates)
