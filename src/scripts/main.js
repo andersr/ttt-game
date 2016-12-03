@@ -10,11 +10,22 @@ const TTT = function () {
   this.moves = [] // { id: 0, state: ''|'x'|'o'}
   this.humanPlayer = null
   this.botPlayer = null
-  this.gameSquare = function (id) {
-    this.id = id
-    this.state = ''
-  }
   this.boardCreated = false
+
+  const addGameSquares = totalSquares => {
+    function GameSquare (id) {
+      this.id = id
+      this.state = ''
+    }
+    let squareId = 0
+
+    while(squareId <= totalSquares) {
+      const square = new GameSquare(squareId)
+      this.moves.push(square)
+      squareId++
+    }
+  }
+  addGameSquares(this.rows * this.columns)
 
   this.setBotPlayer = humanPlayer => this.botPlayer = humanPlayer === 'x' ? 'o' : 'x'
 
@@ -77,6 +88,8 @@ $(function() {
   // when resetting the game after it ends, pass in tttGame.humanPlayer
   function resetGame (selectedPlayer) {
     tttGame = new TTT()
+    //console.log('tttGame.moves: ', tttGame.moves)
+
     if (selectedPlayer === null) {
       selectPlayer(startGame)
     } else {
@@ -86,7 +99,7 @@ $(function() {
 
   function startGame (cb) {
     // console.log('starting game')
-    resetBoard(cb)
+    tttBoard(cb)
   }
 
   function selectPlayer(done) {
@@ -113,10 +126,6 @@ $(function() {
     }
   }
 
-  function resetBoard (done) {
-    done()
-  }
-
   function createBoard (done) {
     const $board = $('.ttt-board')
     let squareId = 0
@@ -124,26 +133,35 @@ $(function() {
     const $square = $(document.createElement('div')).addClass('ttt-square grid-cell').append($emptySquare)
     const $row = $(document.createElement('div')).addClass('grid-row')
     function addRow() {
-      var $boardRow = $row.clone()
-      for (var i = 0; i < tttGame.columns; i++) {
+      let $boardRow = $row.clone()
+      for (let i = 0; i < tttGame.columns; i++) {
         $(addSquare()).appendTo($boardRow)
       }
       return $boardRow
     }
     function addSquare() {
-      var $boardSquare = $square.clone()
+      let $boardSquare = $square.clone()
       $boardSquare.attr('data-square-id', squareId)
-      const square = new tttGame.gameSquare(squareId)
-      //console.log('new square: ', square)
-      tttGame.moves.push(square)
       squareId++
       return $boardSquare
     }
-    for (var i = 0; i < tttGame.rows; i++) {
+    for (let i = 0; i < tttGame.rows; i++) {
       $(addRow()).appendTo($board)
     }
+    tttBoard.boardCreated = true
     done()
   }
+
+  function resetBoard (done) {
+    const $tttBoard = $('.ttt-board')
+    const $tttSquares = $tttBoard.find('.ttt-square')
+    $.each($tttSquares, function () {
+      const $emptySquare = $(document.createElement('button')).addClass('empty-square')
+      $(this).children('.played-square').replaceWith($emptySquare)
+    })
+    done()
+  }
+
 
   function runGame() {
 
@@ -205,6 +223,7 @@ $(function() {
       const $playedSquare = $(document.createElement('div')).addClass('played-square')
       $button.replaceWith($playedSquare.append(player))
       const square = _.find(tttGame.moves, move => move.id === selectedSquare)
+      //console.log('square: ', square)
       square.state = player
 
       if (tttGame.movesByPlayer(player).length > 2) {
