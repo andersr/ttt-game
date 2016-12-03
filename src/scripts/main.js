@@ -14,6 +14,7 @@ const TTT = function () {
     this.id = id
     this.state = ''
   }
+  this.boardCreated = false
 
   this.setBotPlayer = humanPlayer => this.botPlayer = humanPlayer === 'x' ? 'o' : 'x'
 
@@ -104,8 +105,19 @@ $(function() {
     })
   }
 
+  function tttBoard (done) {
+    if (tttBoard.boardCreated) {
+      resetBoard(done)
+    } else {
+      createBoard(done)
+    }
+  }
+
   function resetBoard (done) {
-    console.log('reset board')
+    done()
+  }
+
+  function createBoard (done) {
     const $board = $('.ttt-board')
     let squareId = 0
     const $emptySquare = $(document.createElement('button')).addClass('empty-square')
