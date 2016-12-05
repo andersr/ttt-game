@@ -49,7 +49,6 @@
           }
         }
         addEmptySquares(TicTacToe.settings.rows * TicTacToe.settings.columns)
-
       },
       selectPlayerMenu: () => {
         const $playerOptions = $('.player-options')
@@ -148,9 +147,9 @@
         }
 
         const isWinner = player => {
-          const winningMove = _.filter(this.winners, pattern => _.intersection(pattern, movesByPlayer(player)).length == 3)
+          const winningMove = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, movesByPlayer(player)).length === 3)
           if (winningMove.length > 0) {
-            console.log('winner: ')
+            console.log('winner: ', player)
           } else {
             return null
           }
