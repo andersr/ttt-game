@@ -111,7 +111,10 @@
         $playerInfo.show()
       },
       runGame: () => {
-        const startingPlayer = humanPlayer => humanPlayer === 'x' ? humanMove() : botMove()
+        const bot = tttGame.botPlayer
+        const human = tttGame.humanPlayer
+        const opponent = player => player === human ? bot : human
+        const startingMove = () => human === 'x' ? humanMove() : botMove()
 
         const qtyMovesCompleted = () => _.filter(tttGame.moves, move => move.state !== '').length
 
@@ -127,8 +130,8 @@
           return _.map(moves, move => move.id)
         }
 
-        const firstBotMove = opponent => {
-          if(_.includes(movesByPlayer(opponent), TicTacToe.settings.centerSquare)) {
+        const firstBotMove = () => {
+          if(_.includes(movesByPlayer(human), TicTacToe.settings.centerSquare)) {
             return randomSelection(TicTacToe.settings.cornerSquares)
           } else {
             return TicTacToe.settings.centerSquare
@@ -136,17 +139,15 @@
         }
 
         // TODO: refactor these three down to a single function
-        const moveCandidates = (playerMoves, opponentMoves) => {
-          // const matchingPlayerMoves = winningMove? 2 : 0
-          const winningMovePatterns = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, playerMoves).length > 0 && _.intersection(pattern, opponentMoves).length === 0)
-          const moves = _.map(winningMovePatterns, pattern => _.filter(pattern, move => _.includes(availableMoves(), move)))
+        const moveCandidates = player => {
+          const winningMoves = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, movesByPlayer(player)).length > 0 && _.intersection(pattern, movesByPlayer(opponent(player))).length === 0)
+          const moves = _.map(winningMoves, pattern => _.filter(pattern, move => _.includes(availableMoves(), move)))
           return _.flatten(moves)
         }
 
-        const winningMove = (playerMoves, opponentMoves) => {
-          const winningMovePatterns = _.filter(this.winners, pattern => _.intersection(pattern, playerMoves).length == 2 && _.intersection(pattern, opponentMoves).length === 0)
-
-          const moves = _.map(winningMovePatterns, pattern => _.filter(pattern, move => _.includes(this.availableMoves(), move)))
+        const winningMove = player => {
+          const winningMoves = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, movesByPlayer(player)).length == 2 && _.intersection(pattern, movesByPlayer(opponent(player))).length === 0)
+          const moves = _.map(winningMoves, pattern => _.filter(pattern, move => _.includes(availableMoves(), move)))
           return _.flatten(moves)
         }
 
@@ -160,29 +161,32 @@
         }
 
         const botMove = () => {
-          if(movesByPlayer(tttGame.botPlayer).length === 0) {
-            playerMove(tttGame.botPlayer, firstBotMove(tttGame.humanPlayer))
+          if(movesByPlayer(bot).length === 0) {
+            playerMove(bot, firstBotMove())
           } else {
 
-            const winningBotMove = winningMove(movesByPlayer(tttGame.botPlayer), movesByPlayer(tttGame.humanPlayer))
+            const winningBotMove = winningMove(bot)
 
-            const winningHumanMove = winningMove(movesByPlayer(tttGame.humanPlayer), movesByPlayer(tttGame.botPlayer))
+            const winningHumanMove = winningMove(human)
 
             if(winningBotMove.length > 0) {
-              playerMove(tttGame.botPlayer, winningBotMove[0])
+              playerMove(bot, winningBotMove[0])
             } else if (winningHumanMove.length > 0) {
-              playerMove(tttGame.botPlayer, winningHumanMove[0])
+              playerMove(bot, winningHumanMove[0])
             } else {
-              const botMoveCandidates = moveCandidates(movesByPlayer(tttGame.botPlayer), movesByPlayer(tttGame.humanPlayer))
-              const humanMoveCandidates = moveCandidates(movesByPlayer(tttGame.humanPlayer), movesByPlayer(tttGame.botPlayer))
+              const botMoveCandidates = moveCandidates(bot)
+              console.log('botMoveCandidates: ', botMoveCandidates)
+              const humanMoveCandidates = moveCandidates(human)
+              console.log('humanMoveCandidates: ', humanMoveCandidates)
+
               const blockingMoves = _.intersection(botMoveCandidates, humanMoveCandidates)
 
               if(blockingMoves.length > 0) {
-                playerMove(tttGame.botPlayer, randomSelection(blockingMoves))
+                playerMove(bot, randomSelection(blockingMoves))
               } else if (botMoveCandidates.length > 0) {
-                playerMove(tttGame.botPlayer, randomSelection(botMoveCandidates))
+                playerMove(bot, randomSelection(botMoveCandidates))
               } else {
-                playerMove(tttGame.botPlayer, randomSelection(availableMoves()))
+                playerMove(bot, randomSelection(availableMoves()))
               }
             }
           }
@@ -193,7 +197,7 @@
           $emptySquare.on('click', function(){
             const selectedSquare = $(this).parent().data('square-id')
             $emptySquare.off()
-            playerMove(tttGame.humanPlayer, selectedSquare)
+            playerMove(human, selectedSquare)
           })
         }
 
@@ -206,14 +210,14 @@
           square.state = player
 
           if (movesByPlayer(player).length > 2) {
-            if(!!isWinner(player)){
+            if(!!isWinner(player)) {
               console.log('isWinner(player): ', isWinner(player))
               TicTacToe.resetGame()
             }
           }
 
          if (qtyMovesRemaining() > 0) {
-            if(player === tttGame.humanPlayer) {
+            if(player === human) {
               botMove()
             } else {
               humanMove()
@@ -224,7 +228,7 @@
           }
         }
         TicTacToe.playerInfo()
-        startingPlayer(tttGame.humanPlayer)
+        startingMove()
       }
     }
     TicTacToe.init()
