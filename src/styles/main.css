@@ -39,3 +39,8 @@
   background-color: white;
   cursor: default;
 }
+
+.secondary-text {
+  color: gray;
+  font-size: smaller;
+}

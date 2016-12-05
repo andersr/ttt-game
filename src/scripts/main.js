@@ -63,7 +63,7 @@
           TicTacToe.init()
         })
 
-        $messages.text('Which player would you like to be?')
+        $messages.append("<p>Which player would you like to be?</p> <p class='secondary-text'>(Ps. 'X' goes first in Tic Tac Toe)</p>")
         $messages.show()
         $playerOptions.show()
       },
@@ -106,7 +106,9 @@
         done()
       },
       playerInfo: () => {
-
+        const $playerInfo = $('.player-info')
+        $playerInfo.text(`You: ${tttGame.humanPlayer.toUpperCase()} / Computer: ${tttGame.botPlayer.toUpperCase()} `)
+        $playerInfo.show()
       },
       runGame: () => {
         const startingPlayer = humanPlayer => humanPlayer === 'x' ? humanMove() : botMove()
@@ -221,7 +223,8 @@
             TicTacToe.resetGame()
           }
         }
-        startingPlayer(tttGame.startingPlayer)
+        TicTacToe.playerInfo()
+        startingPlayer(tttGame.humanPlayer)
       }
     }
     TicTacToe.init()
