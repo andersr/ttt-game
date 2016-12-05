@@ -138,16 +138,12 @@
           }
         }
 
-        // TODO: refactor these three down to a single function
-        const moveCandidates = player => {
-          const winningMoves = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, movesByPlayer(player)).length > 0 && _.intersection(pattern, movesByPlayer(opponent(player))).length === 0)
-          const moves = _.map(winningMoves, pattern => _.filter(pattern, move => _.includes(availableMoves(), move)))
-          return _.flatten(moves)
-        }
-
-        const winningMove = player => {
-          const winningMoves = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, movesByPlayer(player)).length == 2 && _.intersection(pattern, movesByPlayer(opponent(player))).length === 0)
-          const moves = _.map(winningMoves, pattern => _.filter(pattern, move => _.includes(availableMoves(), move)))
+        const moveCandidates = (player, isWinner = false) => {
+          const winningMoves = TicTacToe.settings.winners
+          const matchQty = isWinner ? 1 : 0
+          const matchingMoves = (pattern, playerMoves) => _.intersection(pattern, playerMoves).length
+          const candidates = _.filter(winningMoves, pattern => matchingMoves(pattern, movesByPlayer(player)) > matchQty && matchingMoves(pattern, movesByPlayer(opponent(player))) === 0)
+          const moves = _.map(candidates, pattern => _.filter(pattern, move => _.includes(availableMoves(), move)))
           return _.flatten(moves)
         }
 
@@ -165,9 +161,8 @@
             playerMove(bot, firstBotMove())
           } else {
 
-            const winningBotMove = winningMove(bot)
-
-            const winningHumanMove = winningMove(human)
+            const winningBotMove = moveCandidates(bot, true)
+            const winningHumanMove = moveCandidates(human, true)
 
             if(winningBotMove.length > 0) {
               playerMove(bot, winningBotMove[0])
