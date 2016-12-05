@@ -2,7 +2,7 @@
   'use strict'
   // Globals
   let humanPlayer = null
-  let tttGame, tttBoard
+  let tttGame
 
   // Utils
   const randomSelection = arr => arr[Math.floor(Math.random() * arr.length)]
@@ -10,12 +10,14 @@
   // Dom
   $(function () {
     const $messages = $('.messages')
-
+    const $tttBoard = $('.ttt-board')
     // Ttt game
     const TicTacToe = {
-      config: {
+      settings: {
         rows: 3,
         columns: 3,
+        centerSquare: 4,
+        cornerSquares: [0, 2, 6, 8],
         winners: [ [0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6] ]
       },
       init: function () {
@@ -29,8 +31,9 @@
       Game: function (humanPlayer) {
         this.humanPlayer = humanPlayer
         this.botPlayer = humanPlayer === 'x' ? 'o' : 'x'
+        this.moves = []
 
-        const addGameSquares = totalSquares => {
+        const addEmptySquares = totalSquares => {
           const squares = []
           let squareId = 0
 
@@ -41,17 +44,12 @@
 
           while(squareId <= totalSquares) {
             const square = new GameSquare(squareId)
-            squares.push(square)
+            this.moves.push(square)
             squareId++
           }
-          return squares
         }
+        addEmptySquares(TicTacToe.settings.rows * TicTacToe.settings.columns)
 
-        this.squares = addGameSquares(TicTacToe.config.rows * TicTacToe.config.columns)
-
-      },
-      Board: function (squares) {
-        // create or reset board
       },
       selectPlayerMenu: () => {
         const $playerOptions = $('.player-options')
@@ -70,7 +68,7 @@
         $playerOptions.show()
       },
       newBoard: done => {
-        const $board = $('.ttt-board')
+
         let squareId = 0
         const $emptySquare = $(document.createElement('button')).addClass('empty-square')
         const $square = $(document.createElement('div')).addClass('ttt-square grid-cell').append($emptySquare)
@@ -78,28 +76,152 @@
 
         function addRow () {
           let $boardRow = $row.clone()
-          for (let i = 0; i < TicTacToe.config.columns; i++) {
+          for (let i = 0; i < TicTacToe.settings.columns; i++) {
             $(addSquare()).appendTo($boardRow)
           }
           return $boardRow
         }
-        function addSquare() {
+        function addSquare () {
           let $boardSquare = $square.clone()
           $boardSquare.attr('data-square-id', squareId)
           squareId++
           return $boardSquare
         }
-        for (let i = 0; i < TicTacToe.config.rows; i++) {
-          $(addRow()).appendTo($board)
+        for (let i = 0; i < TicTacToe.settings.rows; i++) {
+          $(addRow()).appendTo($tttBoard)
         }
-        // tttBoard.boardCreated = true
         done()
       },
+      resetGame: () => {
+        humanPlayer = tttGame.humanPlayer
+        tttGame = new TicTacToe.Game(humanPlayer)
+        TicTacToe.resetBoard(TicTacToe.runGame)
+      },
       resetBoard: done => {
+        const $tttSquares = $tttBoard.find('.ttt-square')
+        $.each($tttSquares, function () {
+          const $emptySquare = $(document.createElement('button')).addClass('empty-square')
+          $(this).children('.played-square').replaceWith($emptySquare)
+        })
+        done()
+      },
+      playerInfo: () => {
 
       },
       runGame: () => {
+        const startingPlayer = humanPlayer => humanPlayer === 'x' ? humanMove() : botMove()
 
+        const qtyMovesCompleted = () => _.filter(tttGame.moves, move => move.state !== '').length
+
+        const qtyMovesRemaining = () => (TicTacToe.settings.rows * TicTacToe.settings.columns) - qtyMovesCompleted()
+
+        const availableMoves = () => {
+          const moves = _.filter(tttGame.moves, move => move.state === '')
+          return _.map(moves, move => move.id)
+        }
+
+        const movesByPlayer = player => {
+          const moves = _.filter(tttGame.moves, move => move.state === player)
+          return _.map(moves, move => move.id)
+        }
+
+        const firstBotMove = opponent => {
+          if(_.includes(movesByPlayer(opponent), TicTacToe.settings.centerSquare)) {
+            return randomSelection(TicTacToe.settings.cornerSquares)
+          } else {
+            return TicTacToe.settings.centerSquare
+          }
+        }
+
+        // TODO: refactor these three down to a single function
+        const moveCandidates = (playerMoves, opponentMoves) => {
+          // const matchingPlayerMoves = winningMove? 2 : 0
+          const winningMovePatterns = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, playerMoves).length > 0 && _.intersection(pattern, opponentMoves).length === 0)
+          const moves = _.map(winningMovePatterns, pattern => _.filter(pattern, move => _.includes(availableMoves(), move)))
+          return _.flatten(moves)
+        }
+
+        const winningMove = (playerMoves, opponentMoves) => {
+          const winningMovePatterns = _.filter(this.winners, pattern => _.intersection(pattern, playerMoves).length == 2 && _.intersection(pattern, opponentMoves).length === 0)
+
+          const moves = _.map(winningMovePatterns, pattern => _.filter(pattern, move => _.includes(this.availableMoves(), move)))
+          return _.flatten(moves)
+        }
+
+        const isWinner = player => {
+          const winningMove = _.filter(this.winners, pattern => _.intersection(pattern, movesByPlayer(player)).length == 3)
+          if (winningMove.length > 0) {
+            console.log('winner: ')
+          } else {
+            return null
+          }
+        }
+
+        const botMove = () => {
+          if(movesByPlayer(tttGame.botPlayer).length === 0) {
+            playerMove(tttGame.botPlayer, firstBotMove(tttGame.humanPlayer))
+          } else {
+
+            const winningBotMove = winningMove(movesByPlayer(tttGame.botPlayer), movesByPlayer(tttGame.humanPlayer))
+
+            const winningHumanMove = winningMove(movesByPlayer(tttGame.humanPlayer), movesByPlayer(tttGame.botPlayer))
+
+            if(winningBotMove.length > 0) {
+              playerMove(tttGame.botPlayer, winningBotMove[0])
+            } else if (winningHumanMove.length > 0) {
+              playerMove(tttGame.botPlayer, winningHumanMove[0])
+            } else {
+              const botMoveCandidates = moveCandidates(movesByPlayer(tttGame.botPlayer), movesByPlayer(tttGame.humanPlayer))
+              const humanMoveCandidates = moveCandidates(movesByPlayer(tttGame.humanPlayer), movesByPlayer(tttGame.botPlayer))
+              const blockingMoves = _.intersection(botMoveCandidates, humanMoveCandidates)
+
+              if(blockingMoves.length > 0) {
+                playerMove(tttGame.botPlayer, randomSelection(blockingMoves))
+              } else if (botMoveCandidates.length > 0) {
+                playerMove(tttGame.botPlayer, randomSelection(botMoveCandidates))
+              } else {
+                playerMove(tttGame.botPlayer, randomSelection(availableMoves()))
+              }
+            }
+          }
+        }
+
+        const humanMove = () => {
+          const $emptySquare = $('.empty-square')
+          $emptySquare.on('click', function(){
+            const selectedSquare = $(this).parent().data('square-id')
+            $emptySquare.off()
+            playerMove(tttGame.humanPlayer, selectedSquare)
+          })
+        }
+
+        const playerMove = (player, selectedSquare) => {
+          const $square = $(`div[data-square-id=${selectedSquare}]`)
+          const $button = $square.children('.empty-square')
+          const $playedSquare = $(document.createElement('div')).addClass('played-square')
+          $button.replaceWith($playedSquare.append(player))
+          const square = _.find(tttGame.moves, move => move.id === selectedSquare)
+          square.state = player
+
+          if (movesByPlayer(player).length > 2) {
+            if(!!isWinner(player)){
+              console.log('isWinner(player): ', isWinner(player))
+              TicTacToe.resetGame()
+            }
+          }
+
+         if (qtyMovesRemaining() > 0) {
+            if(player === tttGame.humanPlayer) {
+              botMove()
+            } else {
+              humanMove()
+            }
+          } else {
+            console.log('no moves remaining - check for tied game or win')
+            TicTacToe.resetGame()
+          }
+        }
+        startingPlayer(tttGame.startingPlayer)
       }
     }
     TicTacToe.init()
