@@ -11,6 +11,12 @@
   $(function () {
     const $messages = $('.messages')
     const $tttBoard = $('.ttt-board')
+    // const $playerInfo = $('.player-info')
+    const showMessage = msg => {
+      $messages.text(msg)
+      // $messages.show()
+    }
+
     // Ttt game
     const TicTacToe = {
       settings: {
@@ -20,12 +26,14 @@
         cornerSquares: [0, 2, 6, 8],
         winners: [ [0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6] ]
       },
-      init: function () {
+      init: () => {
         if (humanPlayer === null) {
-          this.selectPlayerMenu()
+          showMessage("Let's Play Tic Tac Toe")
+          TicTacToe.selectPlayerMenu(TicTacToe.init)
         } else {
           tttGame = new TicTacToe.Game(humanPlayer)
-          this.newBoard(this.runGame)
+          showMessage(TicTacToe.playerInfo())
+          TicTacToe.newBoard(TicTacToe.runGame)
         }
       },
       Game: function (humanPlayer) {
@@ -34,7 +42,7 @@
         this.moves = []
 
         const addEmptySquares = totalSquares => {
-          const squares = []
+          // const squares = []
           let squareId = 0
 
           function GameSquare (id) {
@@ -50,24 +58,18 @@
         }
         addEmptySquares(TicTacToe.settings.rows * TicTacToe.settings.columns)
       },
-      selectPlayerMenu: () => {
-        const $playerOptions = $('.player-options')
+      selectPlayerMenu: done => {
+        const $selectPlayerMenu = $('.select-player-menu')
+        $selectPlayerMenu.show()
         const $selectPlayer = $('.select-player')
-
         $selectPlayer.on('click', function () {
           humanPlayer = $(this).data('player')
           $selectPlayer.off()
-          $playerOptions.hide()
-          $messages.hide()
-          TicTacToe.init()
+          $selectPlayerMenu.hide()
+          done()
         })
-
-        $messages.append("<p>Which player would you like to be?</p> <p class='secondary-text'>(Ps. 'X' goes first in Tic Tac Toe)</p>")
-        $messages.show()
-        $playerOptions.show()
       },
       newBoard: done => {
-
         let squareId = 0
         const $emptySquare = $(document.createElement('button')).addClass('empty-square')
         const $square = $(document.createElement('div')).addClass('ttt-square grid-cell').append($emptySquare)
@@ -104,11 +106,7 @@
         })
         done()
       },
-      playerInfo: () => {
-        const $playerInfo = $('.player-info')
-        $playerInfo.text(`You: ${tttGame.humanPlayer.toUpperCase()} / Computer: ${tttGame.botPlayer.toUpperCase()} `)
-        $playerInfo.show()
-      },
+      playerInfo: () => `You: ${tttGame.humanPlayer.toUpperCase()} / Computer: ${tttGame.botPlayer.toUpperCase()}`,
       runGame: () => {
         const bot = tttGame.botPlayer
         const human = tttGame.humanPlayer
@@ -211,10 +209,20 @@
           const square = _.find(tttGame.moves, move => move.id === selectedSquare)
           square.state = player
           if(isWinner(player)) {
-            console.log('Player ', player, ' is the winner!')
+            if (player === human) {
+              showMessage('You won! Play again?')
+              setTimeout(function(){
+                showMessage(TicTacToe.playerInfo())
+              }, 2000)
+            } else {
+              showMessage('Sorry, you lost :-/ Try again?')
+              setTimeout(function(){
+                showMessage(TicTacToe.playerInfo())
+              }, 2000)
+            }
             TicTacToe.resetGame()
           } else if(isTie(player)) {
-            console.log('the game is a tie')
+            showMessage('The game is a tie')
             TicTacToe.resetGame()
           } else {
             if(player === human) {
@@ -224,7 +232,6 @@
             }
           }
         }
-        TicTacToe.playerInfo()
         startingMove()
       }
     }
