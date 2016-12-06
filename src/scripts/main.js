@@ -6,7 +6,6 @@
 
   // Utils
   const randomSelection = arr => arr[Math.floor(Math.random() * arr.length)]
-  const qtyMatches = (arr1, arr2) => _.intersection(arr2, arr2).length
 
   // Dom
   $(function () {
@@ -139,28 +138,15 @@
         }
 
         const isTie = player => {
-          // no remaining moves? true
           if (qtyMovesRemaining() === 0){
             return true
           } else if (qtyMovesRemaining() === 1){
-            // 1 remaining move?
-
-            // make a copy of current moves
             const simulatedMoves = tttGame.moves
-
-            // get the last remaining move
             const lastMove = availableMoves()[0]
-            console.log('lastMove: ', lastMove)
-
-            // simulate next player making last move
             const square = _.find(simulatedMoves, move => move.id === lastMove)
             square.state = opponent(player)
-
-            // get opponents moves
-
             const movesByPlayer = _.filter(simulatedMoves, move => move.state === player)
             const movedIds = _.map(movesByPlayer, move => move.id)
-
             const winningMove = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, movedIds).length === 3)
             return winningMove.length === 0
           } else {
@@ -173,11 +159,6 @@
           const opponentMoves = movesByPlayer(opponent(player))
           const matchesNeeded = isWinner ? 2 : 1
           const matchingPatterns = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, playerMoves).length === matchesNeeded && _.intersection(pattern, opponentMoves).length === 0)
-
-          // const twoMatches = _.filter(TicTacToe.settings.winners, pattern => qtyMatches(pattern, playerMoves) === 2)
-
-          // console.log('twoMatches: ', twoMatches)
-
           const moves = _.map(matchingPatterns, pattern => _.filter(pattern, move => _.includes(availableMoves(), move)))
           return _.flatten(moves)
         }
@@ -188,25 +169,18 @@
         }
 
         const botMove = () => {
-          // console.log('moves by human: ', movesByPlayer(human))
           if(movesByPlayer(bot).length === 0) {
             playerMove(bot, firstBotMove())
           } else {
-
             const winningBotMove = moveCandidates(bot, true)
             const winningHumanMove = moveCandidates(human, true)
-            // console.log('winningHumanMove: ', testWin())
-
             if(winningBotMove.length > 0) {
               playerMove(bot, winningBotMove[0])
             } else if (winningHumanMove.length > 0) {
               playerMove(bot, winningHumanMove[0])
             } else {
               const botMoveCandidates = moveCandidates(bot)
-              // console.log('botMoveCandidates: ', botMoveCandidates)
               const humanMoveCandidates = moveCandidates(human)
-              // console.log('humanMoveCandidates: ', humanMoveCandidates)
-
               const blockingMoves = _.intersection(botMoveCandidates, humanMoveCandidates)
 
               if(blockingMoves.length > 0) {
@@ -240,9 +214,6 @@
             console.log('Player ', player, ' is the winner!')
             TicTacToe.resetGame()
           } else if(isTie(player)) {
-            // no remaining moves? true
-            // 1 remaining move? simulate opponent making next move - if no winner, return true
-            // else return false
             console.log('the game is a tie')
             TicTacToe.resetGame()
           } else {
@@ -261,63 +232,3 @@
   })
 
 }(jQuery, _))
-
-
-// const testWin = () => {
-//   const humanMoves = movesByPlayer(human)
-//   const botMoves = movesByPlayer(opponent(human))
-//   console.log('moves by bot: ', botMoves)
-//   console.log('moves by human: ', humanMoves)
-//   const winningPatterns = _.filter(TicTacToe.settings.winners, pattern => {
-//     const matches = _.intersection(pattern, humanMoves)
-//     // const humanMatches = qtyMatches(pattern, humanMoves)
-//     // const botMatches = qtyMatches(pattern, botMoves)
-//     console.log('pattern: ', pattern, 'humanMoves: ', humanMoves, ' matches: ', matches)
-//     return matches.length === 2
-//   })
-//
-//   return _.flatten(winningPatterns)
-//
-//   // console.log('winningPatterns: ',)
-//   //
-//   // const moves = _.map(winningPatterns, pattern => _.filter(pattern, move => _.includes(availableMoves(), move)))
-//   // return _.flatten(moves)
-// }
-// check for winner for tie, for no remaining moves, else next move
-//  else if (isTie()) {
-//   // if there is 1 remaining move,
-// }
-
-// if (movesByPlayer(player).length > 2) {
-//   if(!!isWinner(player)) {
-//
-//     TicTacToe.resetGame()
-//   }
-// }
-
-//  if (qtyMovesRemaining() > 0) {
-//     if(player === human) {
-//       botMove()
-//     } else {
-//       humanMove()
-//     }
-//   } else {
-//     console.log('no moves remaining - check for tied game or win')
-//     TicTacToe.resetGame()
-//   }
-
-
-// const remainingMoves = availableMoves().length
-// const noWinner = remainingMoves.length === 0 && !!isWinner(opponent(player)) === false
-// if (noWinner) {
-//   return true
-// } else if (remainingMoves.length > 1) {
-//   return false
-// }
-//  else if (remainingMoves.length <= 1 && ) {
-//   const remainingMove = _.intersection()
-//
-//   // are there any remaining moves?
-// } else {
-//
-// }
