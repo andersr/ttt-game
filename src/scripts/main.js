@@ -1,4 +1,4 @@
-(function ($) {
+(function ($, _) {
   'use strict'
   // Globals
   let humanPlayer = null
@@ -129,6 +129,10 @@
           return _.map(moves, move => move.id)
         }
 
+        // const testLastMove = opponent => {
+        //   const lastMove = _.difference(availableMoves(), moveCandidates(opponent))
+        // }
+
         const firstBotMove = () => {
           if(_.includes(movesByPlayer(human), TicTacToe.settings.centerSquare)) {
             return randomSelection(TicTacToe.settings.cornerSquares)
@@ -137,13 +141,45 @@
           }
         }
 
+        const qtyMatches = (arr1, arr2) => _.intersection(arr2, arr2).length
+
         const moveCandidates = (player, isWinner = false) => {
-          const winningMoves = TicTacToe.settings.winners
-          const matchQty = isWinner ? 1 : 0
-          const matchingMoves = (pattern, playerMoves) => _.intersection(pattern, playerMoves).length
-          const candidates = _.filter(winningMoves, pattern => matchingMoves(pattern, movesByPlayer(player)) > matchQty && matchingMoves(pattern, movesByPlayer(opponent(player))) === 0)
-          const moves = _.map(candidates, pattern => _.filter(pattern, move => _.includes(availableMoves(), move)))
+          const playerMoves = movesByPlayer(player)
+          const opponentMoves = movesByPlayer(opponent(player))
+          const matchesNeeded = isWinner ? 1 : 2
+          const matchingPatterns = _.filter(TicTacToe.settings.winners, pattern => qtyMatches(pattern, playerMoves) === matchesNeeded && qtyMatches(pattern, opponentMoves) === 0)
+          const moves = _.map(matchingPatterns, pattern => _.filter(pattern, move => _.includes(availableMoves(), move)))
           return _.flatten(moves)
+        }
+
+        const isTie = player => {
+          if (qtyMovesRemaining() >= 2){
+            return false
+          } else if (qtyMovesRemaining() === 1){
+            const simulatedMoves = tttGame.moves
+            const lastMove = availableMoves()[0]
+            // who has next move? opponent(player)
+            const square = _.find(simulatedMoves, move => move.id === lastMove)
+            square.state = opponent(player)
+
+            // call moveCandidates(player, true) and see if it returns a win
+            // need to call movesByPlayer but replace tttGame.moves with simulatedMoves out 
+          }
+
+          // const remainingMoves = availableMoves().length
+          // const noWinner = remainingMoves.length === 0 && !!isWinner(opponent(player)) === false
+          // if (noWinner) {
+          //   return true
+          // } else if (remainingMoves.length > 1) {
+          //   return false
+          // }
+          //  else if (remainingMoves.length <= 1 && ) {
+          //   const remainingMove = _.intersection()
+          //
+          //   // are there any remaining moves?
+          // } else {
+          //
+          // }
         }
 
         const isWinner = player => {
@@ -169,9 +205,9 @@
               playerMove(bot, winningHumanMove[0])
             } else {
               const botMoveCandidates = moveCandidates(bot)
-              console.log('botMoveCandidates: ', botMoveCandidates)
+              // console.log('botMoveCandidates: ', botMoveCandidates)
               const humanMoveCandidates = moveCandidates(human)
-              console.log('humanMoveCandidates: ', humanMoveCandidates)
+              // console.log('humanMoveCandidates: ', humanMoveCandidates)
 
               const blockingMoves = _.intersection(botMoveCandidates, humanMoveCandidates)
 
@@ -203,23 +239,39 @@
           const square = _.find(tttGame.moves, move => move.id === selectedSquare)
           square.state = player
 
-          if (movesByPlayer(player).length > 2) {
-            if(!!isWinner(player)) {
-              console.log('isWinner(player): ', isWinner(player))
-              TicTacToe.resetGame()
-            }
-          }
-
-         if (qtyMovesRemaining() > 0) {
+          // check for winner for tie, for no remaining moves, else next move
+          if(!!isWinner(player)) {
+            console.log('isWinner(player): ', isWinner(player))
+            TicTacToe.resetGame()
+          } else {
             if(player === human) {
               botMove()
             } else {
               humanMove()
             }
-          } else {
-            console.log('no moves remaining - check for tied game or win')
-            TicTacToe.resetGame()
           }
+
+          //  else if (isTie()) {
+          //   // if there is 1 remaining move,
+          // }
+
+          // if (movesByPlayer(player).length > 2) {
+          //   if(!!isWinner(player)) {
+          //
+          //     TicTacToe.resetGame()
+          //   }
+          // }
+
+        //  if (qtyMovesRemaining() > 0) {
+        //     if(player === human) {
+        //       botMove()
+        //     } else {
+        //       humanMove()
+        //     }
+        //   } else {
+        //     console.log('no moves remaining - check for tied game or win')
+        //     TicTacToe.resetGame()
+        //   }
         }
         TicTacToe.playerInfo()
         startingMove()
@@ -228,4 +280,4 @@
     TicTacToe.init()
   })
 
-}(jQuery))
+}(jQuery, _))
