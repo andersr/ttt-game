@@ -26,9 +26,15 @@
         cornerSquares: [0, 2, 6, 8],
         winners: [ [0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6] ]
       },
+      messages: {
+        welcomeMsg: "Let's Play Tic Tac Toe!",
+        botWon: "Sorry, you lost :-/ Try again?",
+        humanWon: "You won! Play again?",
+        tiedGame: "It's a tie :-/  Try again?"
+      },
       init: () => {
         if (humanPlayer === null) {
-          showMessage("Let's Play Tic Tac Toe")
+          showMessage(TicTacToe.messages.welcomeMsg)
           TicTacToe.selectPlayerMenu(TicTacToe.init)
         } else {
           tttGame = new TicTacToe.Game(humanPlayer)
@@ -210,19 +216,19 @@
           square.state = player
           if(isWinner(player)) {
             if (player === human) {
-              showMessage('You won! Play again?')
+              showMessage(TicTacToe.messages.humanWon)
               setTimeout(function(){
                 showMessage(TicTacToe.playerInfo())
               }, 2000)
             } else {
-              showMessage('Sorry, you lost :-/ Try again?')
+              showMessage(TicTacToe.messages.botWon)
               setTimeout(function(){
                 showMessage(TicTacToe.playerInfo())
               }, 2000)
             }
             TicTacToe.resetGame()
           } else if(isTie(player)) {
-            showMessage('The game is a tie')
+            showMessage(TicTacToe.messages.tiedGame)
             TicTacToe.resetGame()
           } else {
             if(player === human) {

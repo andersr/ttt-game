@@ -2,8 +2,23 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-.xo, .played-square {
+.select-player, .played-square {
   font-family: 'Architects Daughter', cursive;
+}
+
+.select-player {
+  apperance:none;
+  background: white;
+  border:1px solid gray;
+  border-radius: .5rem;
+  font-size: 3rem;
+  width: 4rem;
+  margin-right: 1rem;
+  cursor: pointer;
+}
+
+.select-player:hover {
+  background-color: #e7e5e1;
 }
 
 .grid {
@@ -36,17 +51,26 @@ body {
 }
 
 .grid-cell {
+    height: 33%;
   /*height: 3em;*/
   /*height: 100%;*/
   /*width: 33.3%;*/
 }
 
 .empty-square {
-  height: 5em;
+  height:100%;
   width: 100%;
   background-color: white;
   cursor: default;
   border:none;
+  cursor: pointer;
+  /*padding: 0;*/
+  /*padding-bottom: .25em;*/
+
+}
+
+.empty-square:hover {
+  background-color: #e7e5e1;
 }
 
 .secondary-text {
@@ -58,6 +82,8 @@ body {
   height: 100%;
 }
 .ttt-square {
+  font-size: 5rem;
+  line-height: .9;
   /*position: relative;*/
   width: 33%;
   height: 33%;
@@ -65,10 +91,11 @@ body {
   height: 0;*/
   /*
   line-height: .75;
+
 */
-font-size: 5rem;
-line-height: .9;
-  border:1px solid gray;
+
+  border:1px solid  #e7e5e1;
+  padding: 0;
 }
 
 .ttt-square .empty-square, .ttt-square .played-square {
