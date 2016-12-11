@@ -1,3 +1,11 @@
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.xo, .played-square {
+  font-family: 'Architects Daughter', cursive;
+}
+
 .grid {
   display: table;
 }
@@ -23,14 +31,14 @@
 }
 
 .grid-row {
-  height: 5em;
+  /*height: 5em;*/
   /*width: 5em;*/
 }
 
 .grid-cell {
-  height: 5em;
+  /*height: 3em;*/
   /*height: 100%;*/
-  width: 5em;
+  /*width: 33.3%;*/
 }
 
 .empty-square {
@@ -38,9 +46,33 @@
   width: 100%;
   background-color: white;
   cursor: default;
+  border:none;
 }
 
 .secondary-text {
   color: gray;
   font-size: smaller;
+}
+.ttt-board {
+  width: 100%;
+  height: 100%;
+}
+.ttt-square {
+  /*position: relative;*/
+  width: 33%;
+  height: 33%;
+  /*padding-bottom: 33%;
+  height: 0;*/
+  /*
+  line-height: .75;
+*/
+font-size: 5rem;
+line-height: .9;
+  border:1px solid gray;
+}
+
+.ttt-square .empty-square, .ttt-square .played-square {
+  /*position: absolute;*/
+  /*font-size: 5rem;
+  line-height: .9;*/
 }
