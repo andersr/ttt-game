@@ -61,6 +61,8 @@
     "gulp-postcss": "^6.1.x",
     "gulp-preprocess": "^2.0.x",
     "gulp-rename": "^1.2.x",
+    "gulp-sass": "^3.0.0",
+    "gulp-sass-glob": "^1.0.8",
     "gulp-sitemap": "^4.0.x",
     "gulp-sourcemaps": "^1.6.x",
     "gulp-uglify": "^2.0.x",
@@ -127,7 +129,7 @@
   },
   "extensions": {
     "scripts": "js",
-    "styles": "css"
+    "styles": "scss"
   },
   "browserify": {
     "transform": [
