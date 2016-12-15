@@ -11,10 +11,15 @@
   $(function () {
     const $messages = $('.messages')
     const $tttBoard = $('.ttt-board')
+    const $modal = $('#modal')
     // const $playerInfo = $('.player-info')
+
+    const showModal = () => {
+      $modal.modal('show')
+    }
+
     const showMessage = msg => {
       $messages.text(msg)
-      // $messages.show()
     }
 
     // Ttt game
@@ -34,8 +39,8 @@
       },
       init: () => {
         if (humanPlayer === null) {
-          showMessage(TicTacToe.messages.welcomeMsg)
-          TicTacToe.selectPlayerMenu(TicTacToe.init)
+          showModal()
+          // TicTacToe.selectPlayerMenu(TicTacToe.init)
         } else {
           tttGame = new TicTacToe.Game(humanPlayer)
           showMessage(TicTacToe.playerInfo())

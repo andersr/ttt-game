@@ -10,38 +10,38 @@ $font--base: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 $font--xo: 'Architects Daughter', Papyrus, fantasy;
 $font--small: smaller;
 
-body {
-  font-family: $font--base;
-}
+// body {
+//   font-family: $font--base;
+// }
 
-.app-container {
-  padding: $layout--app-container-padding;
-  max-width: $layout--app-max-width;
-  margin: 0 auto;
-}
+// .app-container {
+//   padding: $layout--app-container-padding;
+//   max-width: $layout--app-max-width;
+//   margin: 0 auto;
+// }
 
-.secondary-text {
+.secondary {
   color: $color--secondary;
-  font-size: $font--small;
+  // font-size: $font--small;
 }
 
 .select-player, .played-square {
   font-family: $font--xo;
 }
-.select-player {
-  appearance:none;
-  background: white;
-  border:1px solid $color--secondary;
-  border-radius: .5rem;
-  font-size: 3rem;
-  width: 4rem;
-  margin-right: 1rem;
-  cursor: pointer;
-
-    &:hover {
-      background-color: $color--secondary;
-    }
-  }
+// .select-player {
+//   appearance:none;
+//   background: white;
+//   border:1px solid $color--secondary;
+//   border-radius: .5rem;
+//   font-size: 3rem;
+//   width: 4rem;
+//   margin-right: 1rem;
+//   cursor: pointer;
+//
+//     &:hover {
+//       background-color: $color--secondary;
+//     }
+//   }
 
   .grid {
     display: table;
