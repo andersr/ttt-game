@@ -70,7 +70,8 @@
       },
       selectPlayerMenu: () => {
         const $selectPlayerMenu = $('.select-player-menu')
-        $selectPlayerMenu.modal('show')
+        const closeModal = humanPlayer === null ? 'static' : true
+        $selectPlayerMenu.modal({show: true, backdrop: closeModal})
         const $selectPlayer = $('.select-player')
         $selectPlayer.on('click', function () {
           humanPlayer = $(this).data('player')
