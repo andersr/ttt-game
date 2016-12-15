@@ -11,12 +11,12 @@
   $(function () {
     const $messages = $('.messages')
     const $tttBoard = $('.ttt-board')
-    const $modal = $('#modal')
+    // const $modal = $('#modal')
     // const $playerInfo = $('.player-info')
 
-    const showModal = () => {
-      $modal.modal('show')
-    }
+    // const showModal = () => {
+    //   $modal.modal('show')
+    // }
 
     const showMessage = msg => {
       $messages.text(msg)
@@ -39,8 +39,7 @@
       },
       init: () => {
         if (humanPlayer === null) {
-          showModal()
-          // TicTacToe.selectPlayerMenu(TicTacToe.init)
+          TicTacToe.selectPlayerMenu()
         } else {
           tttGame = new TicTacToe.Game(humanPlayer)
           showMessage(TicTacToe.playerInfo())
@@ -69,15 +68,17 @@
         }
         addEmptySquares(TicTacToe.settings.rows * TicTacToe.settings.columns)
       },
-      selectPlayerMenu: done => {
+      selectPlayerMenu: () => {
         const $selectPlayerMenu = $('.select-player-menu')
-        $selectPlayerMenu.show()
+        $selectPlayerMenu.modal('show')
         const $selectPlayer = $('.select-player')
         $selectPlayer.on('click', function () {
           humanPlayer = $(this).data('player')
           $selectPlayer.off()
-          $selectPlayerMenu.hide()
-          done()
+          $selectPlayerMenu.modal('hide')
+          $selectPlayerMenu.on('hidden.bs.modal', function () {
+            TicTacToe.init()
+          })
         })
       },
       newBoard: done => {
