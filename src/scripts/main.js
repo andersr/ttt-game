@@ -128,11 +128,6 @@
           return _.map(moves, move => move.id)
         }
 
-        const movesByPlayer = player => {
-          const moves = _.filter(tttGame.moves, move => move.state === player)
-          return _.map(moves, move => move.id)
-        }
-
         const firstBotMove = () => {
           if(_.includes(movesByPlayer(human), TicTacToe.settings.centerSquare)) {
             return randomSelection(TicTacToe.settings.cornerSquares)
@@ -141,40 +136,32 @@
           }
         }
 
-        // const isTie = player => {
-        //   if (qtyMovesRemaining() === 0){
-        //     return true
-        //   } else if (qtyMovesRemaining() === 1){
-        //     const simulatedMoves = tttGame.moves
-        //     const lastMove = availableMoves()[0]
-        //     const square = _.find(simulatedMoves, move => move.id === lastMove)
-        //     square.state = opponent(player)
-        //     const movesByPlayer = _.filter(simulatedMoves, move => move.state === player)
-        //     const movedIds = _.map(movesByPlayer, move => move.id)
-        //     const winningMove = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, movedIds).length === 3)
-        //     return winningMove.length === 0
-        //   } else {
-        //     return false
-        //   }
-        // }
-
-        const isTie = () => {
-          // if there are no moves remaining AND there are no winners
+        const isTie = player => {
+          let isTie = false
+          const noWinners = !isWinner(bot) && !isWinner(human)
           if (qtyMovesRemaining() === 0){
-            return !isWinner(bot) && !isWinner(human)
+            isTie = true
+          } else if (qtyMovesRemaining() === 1) {
+            const simulatedMoves = tttGame.moves
+            const lastMove = availableMoves()[0]
+            const lastSquare = _.find(simulatedMoves, move => move.id === lastMove)
+            lastSquare.state = opponent(player)
+            const opponentMoves = movesByPlayer(opponent(player), simulatedMoves)
+            if(!isWinner(opponent(player), opponentMoves)){
+              isTie = true
+            }
           }
-          //  else if (qtyMovesRemaining() === 1){
-          //   const simulatedMoves = tttGame.moves
-          //   const lastMove = availableMoves()[0]
-          //   const square = _.find(simulatedMoves, move => move.id === lastMove)
-          //   square.state = opponent(player)
-          //   const movesByPlayer = _.filter(simulatedMoves, move => move.state === player)
-          //   const movedIds = _.map(movesByPlayer, move => move.id)
-          //   const winningMove = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, movedIds).length === 3)
-          //   return winningMove.length === 0
-          // } else {
-          //   return false
-          // }
+          return isTie
+        }
+
+        const movesByPlayer = (player, game = tttGame.moves) => {
+          const moves = _.filter(game, move => move.state === player)
+          return _.map(moves, move => move.id)
+        }
+
+        const isWinner = (player, moves = movesByPlayer(player)) => {
+          const winningMove = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, moves).length === 3)
+          return winningMove.length > 0
         }
 
         const moveCandidates = (player, isWinner = false) => {
@@ -186,10 +173,6 @@
           return _.flatten(moves)
         }
 
-        const isWinner = player => {
-          const winningMove = _.filter(TicTacToe.settings.winners, pattern => _.intersection(pattern, movesByPlayer(player)).length === 3)
-          return winningMove.length > 0
-        }
 
         const botMove = () => {
           if(movesByPlayer(bot).length === 0) {
@@ -246,9 +229,9 @@
               }, 2000)
             }
             TicTacToe.resetGame()
-          } else if(isTie()) {
+          } else if(isTie(player)) {
             showMessage(TicTacToe.messages.tiedGame)
-            TicTacToe.resetGame()
+            //TicTacToe.resetGame()
           } else {
             if(player === human) {
               botMove()
