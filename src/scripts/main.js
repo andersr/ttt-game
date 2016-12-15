@@ -173,7 +173,6 @@
           return _.flatten(moves)
         }
 
-
         const botMove = () => {
           if(movesByPlayer(bot).length === 0) {
             playerMove(bot, firstBotMove())
@@ -231,7 +230,7 @@
             TicTacToe.resetGame()
           } else if(isTie(player)) {
             showMessage(TicTacToe.messages.tiedGame)
-            //TicTacToe.resetGame()
+            TicTacToe.resetGame()
           } else {
             if(player === human) {
               botMove()
