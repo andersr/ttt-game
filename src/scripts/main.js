@@ -7,6 +7,8 @@
   // Utils
   const randomSelection = arr => arr[Math.floor(Math.random() * arr.length)]
 
+  const delay = (duration, done) => setTimeout(done, duration)
+
   // Dom
   $(function () {
     const $messages = $('.messages')
@@ -121,6 +123,8 @@
       },
       playerInfo: () => `You: ${tttGame.humanPlayer.toUpperCase()} / Computer: ${tttGame.botPlayer.toUpperCase()}`,
       runGame: () => {
+        showMessage(TicTacToe.playerInfo())
+
         const bot = tttGame.botPlayer
         const human = tttGame.humanPlayer
         const opponent = player => player === human ? bot : human
@@ -198,7 +202,7 @@
               if(blockingMoves.length > 0) {
                 playerMove(bot, randomSelection(blockingMoves))
               } else if (botMoveCandidates.length > 0) {
-                playerMove(bot, randomSelection(botMoveCandidates))
+                 playerMove(bot, randomSelection(botMoveCandidates))
               } else {
                 playerMove(bot, randomSelection(availableMoves()))
               }
@@ -222,25 +226,20 @@
           $button.replaceWith($playedSquare.append(player))
           const square = _.find(tttGame.moves, move => move.id === selectedSquare)
           square.state = player
+
           if(isWinner(player)) {
             if (player === human) {
               showMessage(TicTacToe.messages.humanWon)
-              setTimeout(function(){
-                showMessage(TicTacToe.playerInfo())
-              }, 2000)
             } else {
               showMessage(TicTacToe.messages.botWon)
-              setTimeout(function(){
-                showMessage(TicTacToe.playerInfo())
-              }, 2000)
             }
-            TicTacToe.resetGame()
+            delay(3000, TicTacToe.resetGame)
           } else if(isTie(player)) {
             showMessage(TicTacToe.messages.tiedGame)
-            TicTacToe.resetGame()
+            delay(3000, TicTacToe.resetGame)
           } else {
             if(player === human) {
-              botMove()
+            delay(500, botMove)
             } else {
               humanMove()
             }
