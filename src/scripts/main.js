@@ -13,6 +13,8 @@
   $(function () {
     const $messages = $('.messages')
     const $tttBoard = $('.ttt-board')
+    const $newGameBtn = $('.new-game-btn')
+
     // const $modal = $('#modal')
     // const $playerInfo = $('.player-info')
 
@@ -35,16 +37,17 @@
       },
       messages: {
         welcomeMsg: "Let's Play Tic Tac Toe!",
+        newGame: "New Game",
         botWon: "Sorry, you lost :-/ Try again?",
         humanWon: "You won! Play again?",
         tiedGame: "It's a tie :-/ Try again?"
       },
       init: () => {
         if (humanPlayer === null) {
-          TicTacToe.selectPlayerMenu()
+          TicTacToe.newGame(TicTacToe.messages.welcomeMsg)
         } else {
           tttGame = new TicTacToe.Game(humanPlayer)
-          showMessage(TicTacToe.playerInfo())
+          // showMessage(TicTacToe.playerInfo())
           TicTacToe.newBoard(TicTacToe.runGame)
         }
       },
@@ -70,16 +73,18 @@
         }
         addEmptySquares(TicTacToe.settings.rows * TicTacToe.settings.columns)
       },
-      selectPlayerMenu: () => {
-        const $selectPlayerMenu = $('.select-player-menu')
-        const closeModal = humanPlayer === null ? 'static' : true
-        $selectPlayerMenu.modal({show: true, backdrop: closeModal})
+      newGame: (msg = TicTacToe.messages.newGame, allowClose = false) => {
+        const $newGame = $('.new-game')
+        const $newGameTitle = $('.new-game .modal-title')
+        $newGameTitle.text(msg)
+        const closeModal = humanPlayer !== null && allowClose ? true : 'static'
+        $newGame.modal({show: true, backdrop: closeModal})
         const $selectPlayer = $('.select-player')
         $selectPlayer.on('click', function () {
           humanPlayer = $(this).data('player')
           $selectPlayer.off()
-          $selectPlayerMenu.modal('hide')
-          $selectPlayerMenu.on('hidden.bs.modal', function () {
+          $newGame.modal('hide')
+          $newGame.on('hidden.bs.modal', function () {
             TicTacToe.init()
           })
         })
@@ -89,7 +94,6 @@
         const $emptySquare = $(document.createElement('button')).addClass('empty-square')
         const $square = $(document.createElement('div')).addClass('ttt-square grid-cell').append($emptySquare)
         const $row = $(document.createElement('div')).addClass('grid-row')
-
         function addRow () {
           let $boardRow = $row.clone()
           for (let i = 0; i < TicTacToe.settings.columns; i++) {
@@ -124,6 +128,11 @@
       playerInfo: () => `You: ${tttGame.humanPlayer.toUpperCase()} / Computer: ${tttGame.botPlayer.toUpperCase()}`,
       runGame: () => {
         showMessage(TicTacToe.playerInfo())
+        $newGameBtn.show()
+        $newGameBtn.on('click', () => {
+          TicTacToe.newGame(TicTacToe.messages.newGame, true)
+        //  $newGameBtn.show()
+        })
 
         const bot = tttGame.botPlayer
         const human = tttGame.humanPlayer

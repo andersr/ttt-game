@@ -21,20 +21,18 @@
 </head>
 <body>
 	<div class="app-container">
-		<!-- <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
-  Launch demo modal
-</button> -->
 		<h1><span class="messages"></span></h1>
-
-	  <div class="ttt-board grid">
+	  <div class="ttt-board grid"></div>
+		<button type="button" style="display:none;" class="new-game-btn btn btn-primary btn-lg">
+	Switch
+	</button>
 	  </div>
-	    </div>
-			<!-- Modal -->
-<div class="select-player-menu modal fade" tabindex="-1" role="dialog" aria-labelledby="select-player-menu">
+<!-- Modal   data-toggle="modal" data-target=".new-game" -->
+<div class="new-game modal fade" tabindex="-1" role="dialog" aria-labelledby="select-player-menu">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Let's Play Tic Tac Toe!</h4>
+        <h4 class="modal-title"></h4>
       </div>
       <div class="modal-body">
 				<h5 class="lead">Would you like to be player 'X' or 'O'?</h5>
