@@ -10,16 +10,6 @@ $font--base: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 $font--xo: 'Architects Daughter', Papyrus, fantasy;
 $font--small: smaller;
 
-// body {
-//   font-family: $font--base;
-// }
-
-// .app-container {
-//   padding: $layout--app-container-padding;
-//   max-width: $layout--app-max-width;
-//   margin: 0 auto;
-// }
-
 .secondary {
   color: $color--secondary;
   // font-size: $font--small;
@@ -28,64 +18,88 @@ $font--small: smaller;
 .select-player, .played-square {
   font-family: $font--xo;
 }
-// .select-player {
-//   appearance:none;
-//   background: white;
-//   border:1px solid $color--secondary;
-//   border-radius: .5rem;
-//   font-size: 3rem;
-//   width: 4rem;
-//   margin-right: 1rem;
-//   cursor: pointer;
-//
-//     &:hover {
-//       background-color: $color--secondary;
-//     }
-//   }
+.app-container {
+  width: 30em;
+  height: 30em;
+}
 
-  .grid {
-    display: table;
+.ttt-board {
+  width: 100%;
+  height: 100%;
+  display: table;
 
-    .grid-row {
+    .ttt-row {
       display: table-row;
+      // height: 33%;
     }
-    .grid-cell {
+
+    .ttt-square {
       display: table-cell;
       vertical-align: middle;
       text-align: center;
-    }
-    .human-move .empty-square {
-      cursor: pointer;
-    }
-    .human-move .empty-square:hover {
-      background-color: $color--secondary;
-    }
-  }
-
-  .ttt-board {
-    width: 100%;
-    height: 100%;
-
-    .ttt-square {
       font-size: 5rem;
       line-height: .9;
-      /*position: relative;*/
       width: 33%;
       height: 33%;
       border:1px solid $color--secondary; // was #e7e5e1
       padding: 0;
+      // overflow:auto;
     }
-
     .empty-square {
-      height:100%;
-      width: 100%;
-      background-color: white;
-      cursor: default;
-      border:none;
       cursor: pointer;
-
       &:hover {
         background-color: $color--secondary; // was #e7e5e1
       }
     }
+
+    // .empty-square {
+    //   height:100%;
+    //   width: 100%;
+    //   background-color: blue;
+    //   border:none;
+    //   cursor: pointer;
+    //
+    //   &:hover {
+    //     background-color: $color--secondary; // was #e7e5e1
+    //   }
+    // }
   }
+
+  // body {
+  //   font-family: $font--base;
+  // }
+
+  // .app-container {
+  //   padding: $layout--app-container-padding;
+  //   max-width: $layout--app-max-width;
+  //   margin: 0 auto;
+  // }
+
+  // .select-player {
+  //   appearance:none;
+  //   background: white;
+  //   border:1px solid $color--secondary;
+  //   border-radius: .5rem;
+  //   font-size: 3rem;
+  //   width: 4rem;
+  //   margin-right: 1rem;
+  //   cursor: pointer;
+  //
+  //     &:hover {
+  //       background-color: $color--secondary;
+  //     }
+  //   }
+
+    // .grid {
+      // .grid-cell {
+      //   display: table-cell;
+      //   vertical-align: middle;
+      //   text-align: center;
+      // }
+      // .human-move .empty-square {
+      //   cursor: pointer;
+      // }
+      // .human-move .empty-square:hover {
+      //   background-color: $color--secondary;
+      // }
+    // }

@@ -14,7 +14,7 @@
     const $messages = $('.messages')
     const $tttBoard = $('.ttt-board')
     const $switchPlayers = $('.switch-players-btn')
-    const $emptySquare = $(document.createElement('button')).addClass('empty-square')
+    // const $emptySquare = $(document.createElement('button')).addClass('empty-square')
     const showMessage = msg => {
       $messages.text(msg)
     }
@@ -39,67 +39,17 @@
         if (humanPlayer === null) {
           TicTacToe.selectPlayerMenu()
         } else {
-          // firstGame = false
+          firstGame = false
           tttGame = new TicTacToe.Game()
           TicTacToe.newBoard(TicTacToe.runGame)
         }
       },
-      resetGame: () => {
-        // humanPlayer = tttGame.humanPlayer
-        tttGame = new TicTacToe.Game()
-        // console.log('new tttGame: ', tttGame)
-        TicTacToe.resetBoard(TicTacToe.runGame)
-      },
-      resetBoard: done => {
-        // const $tttSquares = $tttBoard.find('.ttt-square')
-        // console.log('$tttSquares: ', $tttSquares)
-        // $tttSquares
-        const $playedSquares = $tttBoard.find('.played-square')
-        console.log('$playedSquares: ', $playedSquares)
-        $emptySquare.replaceAll($playedSquares)
-
-        // $.each($playedSquares, function(square){
-        //   square.replaceWith($emptySquare)
-        // })
-
-        //
-        // $tttBoard.find('.played-square').replaceWith($emptySquare)
-        // $.each($tttSquares, function () {
-        //   //const $emptySquare = $(document.createElement('button')).addClass('empty-square')
-        //   $(this).find('.played-square').replaceWith($emptySquare)
-        // })
-        done()
-      },
-      Game: function () {
-        this.humanPlayer = humanPlayer
-        this.botPlayer = humanPlayer === 'x' ? 'o' : 'x'
-        this.moves = []
-
-        const addEmptySquares = totalSquares => {
-          // const squares = []
-          let squareId = 0
-
-          function GameSquare (id) {
-            this.id = id
-            this.state = ''
-          }
-
-          while(squareId <= totalSquares) {
-            const square = new GameSquare(squareId)
-            this.moves.push(square)
-            squareId++
-          }
-        }
-        addEmptySquares(TicTacToe.settings.rows * TicTacToe.settings.columns)
-      },
       selectPlayerMenu: () => {
         const msg = firstGame ? TicTacToe.messages.firstGame : TicTacToe.messages.switchPlayer
         const closeModal = () => firstGame ? 'static' : true
-
         const $selectPlayerMenu = $('.select-player-menu')
         $selectPlayerMenu.find('.modal-title').text(msg)
         const $selectPlayer = $('.select-player')
-
         $selectPlayer.on('click', function () {
           humanPlayer = $(this).data('player')
           $selectPlayer.off()
@@ -107,23 +57,45 @@
           $selectPlayerMenu.on('hidden.bs.modal', function () {
             $(this).removeData();
             if(firstGame){
-              console.log('calling init')
               TicTacToe.init()
             } else {
-              console.log('calling reset game')
               TicTacToe.resetGame()
             }
           })
         })
-
         $selectPlayerMenu.modal({show: true, backdrop: closeModal()})
-        // console.log('$selectPlayerMenu: ',$selectPlayerMenu)
+      },
+      resetGame: () => {
+        tttGame = new TicTacToe.Game()
+        TicTacToe.resetBoard(TicTacToe.runGame)
+      },
+      resetBoard: done => {
+        const $playedSquares = $tttBoard.find('.played-square')
+        $playedSquares.removeClass('played-square').addClass('empty-square').empty()
+        done()
+      },
+      Game: function () {
+        this.humanPlayer = humanPlayer
+        this.botPlayer = humanPlayer === 'x' ? 'o' : 'x'
+        this.moves = []
+        const totalSquares = TicTacToe.settings.rows * TicTacToe.settings.columns
+        const addEmptySquares = () => {
+          let squareId = 0
+          function GameSquare (id) {
+            this.id = id
+            this.state = ''
+          }
+          while(squareId <= totalSquares) {
+            this.moves.push(new GameSquare(squareId))
+            squareId++
+          }
+        }
+        addEmptySquares()
       },
       newBoard: done => {
         let squareId = 0 // TODO: Use tttBoard.moves[id] instead?
-        //const $emptySquare = $(document.createElement('button')).addClass('empty-square')
-        const $square = $(document.createElement('div')).addClass('ttt-square grid-cell').append($emptySquare)
-        const $row = $(document.createElement('div')).addClass('grid-row')
+        const $square = $(document.createElement('div')).addClass('ttt-square empty-square')
+        const $row = $(document.createElement('div')).addClass('ttt-row')
         function addRow () {
           let $boardRow = $row.clone()
           for (let i = 0; i < TicTacToe.settings.columns; i++) {
@@ -235,17 +207,20 @@
         const humanMove = () => {
           const $emptySquare = $('.empty-square')
           $emptySquare.on('click', function(){
-            const selectedSquare = $(this).parent().data('square-id')
+            const selectedSquare = $(this).data('square-id')
+            console.log('selectedSquare: ', selectedSquare)
             $emptySquare.off()
             playerMove(human, selectedSquare)
           })
         }
 
         const playerMove = (player, selectedSquare) => {
+          // TODO: refactor, finding the id twice, already passing in the selected node
           const $square = $(`div[data-square-id=${selectedSquare}]`)
-          const $button = $square.children('.empty-square')
-          const $playedSquare = $(document.createElement('div')).addClass('played-square')
-          $button.replaceWith($playedSquare.append(player))
+          $square.removeClass('empty-square').addClass('played-square').append(player)
+          // const $button = $square.children('.empty-square')
+          // const $playedSquare = $(document.createElement('div')).addClass('played-square')
+          // $button.replaceWith($playedSquare.append(player))
           const square = _.find(tttGame.moves, move => move.id === selectedSquare)
           square.state = player
 
@@ -274,3 +249,37 @@
   })
 
 }(jQuery, _))
+
+// newBoard: done => {
+//   let squareId = 0 // TODO: Use tttBoard.moves[id] instead?
+//   //const $emptySquare = $(document.createElement('button')).addClass('empty-square')
+//   const $square = $(document.createElement('div')).addClass('ttt-square grid-cell').append($emptySquare)
+//   const $row = $(document.createElement('div')).addClass('grid-row')
+//   function addRow () {
+//     let $boardRow = $row.clone()
+//     for (let i = 0; i < TicTacToe.settings.columns; i++) {
+//       $(addSquare()).appendTo($boardRow)
+//     }
+//     return $boardRow
+//   }
+//   function addSquare () {
+//     let $boardSquare = $square.clone()
+//     $boardSquare.attr('data-square-id', squareId)
+//     squareId++
+//     return $boardSquare
+//   }
+//   for (let i = 0; i < TicTacToe.settings.rows; i++) {
+//     $(addRow()).appendTo($tttBoard)
+//   }
+//   done()
+// },
+// $.each($playedSquares, function(square){
+//   square.replaceWith($emptySquare)
+// })
+
+//
+// $tttBoard.find('.played-square').replaceWith($emptySquare)
+// $.each($tttSquares, function () {
+//   //const $emptySquare = $(document.createElement('button')).addClass('empty-square')
+//   $(this).find('.played-square').replaceWith($emptySquare)
+// })
