@@ -42,6 +42,7 @@
         if (humanPlayer === null) {
           TicTacToe.selectPlayerMenu()
         } else {
+          firstGame = false
           tttGame = new TicTacToe.Game()
           TicTacToe.newBoard(TicTacToe.runGame)
         }
@@ -68,7 +69,7 @@
         $selectPlayerMenu.modal({show: true, backdrop: closeModal()})
       },
       resetGame: () => {
-        firstGame = false
+
         tttGame = new TicTacToe.Game()
         $tttBoard.empty()
         TicTacToe.newBoard(TicTacToe.runGame)
